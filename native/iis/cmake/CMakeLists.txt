@@ -15,6 +15,7 @@ set(output_name "isapi_redirect")
 
 set(cxx_compile_definitions )
 set(cxx_compile_options )
+set(resource_compile_options )
 set(cxx_headers )
 set(cxx_sources )
 set(resource_headers )
@@ -37,9 +38,22 @@ endif()
 
 if(MSVC)
     list(APPEND cxx_compile_options
+        "/W3"
         "/Zi"
         "/EHsc"
-        "/Oy-")
+        "$<$<NOT:$<CONFIG:DEBUG>>:/O2>"
+        "$<$<NOT:$<CONFIG:DEBUG>>:/Ob2>"
+        "$<$<NOT:$<CONFIG:DEBUG>>:/Oy->")
+    if((MSVC_VERSION EQUAL 1900) OR (MSVC_VERSION GREATER 1900))
+        # Turn off option which is not turned on by default in command line
+        list(APPEND cxx_compile_options
+            "/Zc:inline-")
+    endif()
+endif()
+
+if(MSVC)
+    list(APPEND resource_compile_options
+        "/l 0x409")
 endif()
 
 list(APPEND cxx_headers
@@ -105,9 +119,12 @@ set(resource_files
     ${resource_sources}
     "${def_file}")
 
+set_property(SOURCE ${resource_sources} APPEND PROPERTY COMPILE_FLAGS ${resource_compile_options})
+
 if(MSVC)
     list(APPEND link_options
-        "/DEBUG")
+        "/DEBUG"
+        "/MANIFEST:NO")
 endif()
 
 list(APPEND libraries
