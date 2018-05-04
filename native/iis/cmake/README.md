@@ -1,6 +1,6 @@
 # ISAPI redirector CMake project
 
-[![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/vxttkge1f387k57p?svg=true)](https://ci.appveyor.com/project/mabrarov/tomcat-connectors)
+[![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/pghcj500s1a14k9a?svg=true)](https://ci.appveyor.com/project/mabrarov/tomcat-connectors)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15566/badge.svg)](https://scan.coverity.com/projects/mabrarov-tomcat-connectors)
 
 ## Prerequisites
