@@ -102,6 +102,7 @@
 #define PROP_PREFIX_OF_WORKER       "prefix"
 
 #define READ_ONLY_OF_WORKER         "read_only"
+#define REMOTE_ADDRESS_OF_WORKER    "remote_address"
 #define USER_OF_WORKER              "user"
 #define USER_CASE_OF_WORKER         "user_case_insensitive"
 #define GOOD_RATING_OF_WORKER       "good"
@@ -336,6 +337,7 @@ static const char *supported_properties[] = {
     XML_DOCTYPE_OF_WORKER,
     PROP_PREFIX_OF_WORKER,
     READ_ONLY_OF_WORKER,
+    REMOTE_ADDRESS_OF_WORKER,
     USER_OF_WORKER,
     USER_CASE_OF_WORKER,
     GOOD_RATING_OF_WORKER,
@@ -1543,6 +1545,28 @@ int jk_get_is_read_only(jk_map_t *m, const char *wname)
         return jk_map_get_bool(m, buf, def);
     }
     return def;
+}
+
+int jk_get_worker_remote_address_list(jk_map_t *m,
+                                      const char *wname,
+                                      char ***list, unsigned int *num)
+{
+    char buf[PARAM_BUFFER_SIZE];
+
+    if (m && list && num && wname) {
+        char **ar = NULL;
+
+        MAKE_WORKER_PARAM(REMOTE_ADDRESS_OF_WORKER);
+        ar = jk_map_get_string_list(m, buf, num, NULL);
+        if (ar) {
+            *list = ar;
+            return JK_TRUE;
+        }
+        *list = NULL;
+        *num = 0;
+    }
+
+    return JK_FALSE;
 }
 
 int jk_get_worker_user_list(jk_map_t *m,

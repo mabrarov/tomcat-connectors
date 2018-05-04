@@ -446,6 +446,8 @@ struct status_worker
     const char        *doctype;
     const char        *prefix;
     int               read_only;
+    char              **remote_addresses;
+    unsigned int      num_of_remote_addresses;
     char              **user_names;
     unsigned int      num_of_users;
     int               user_case_insensitive;
@@ -4767,7 +4769,20 @@ static int JK_METHOD service(jk_endpoint_t *e,
     /* Set returned error to OK */
     *is_error = JK_HTTP_OK;
 
-    if (w->num_of_users) {
+    if (w->num_of_remote_addresses) {
+        denied = 3;
+        if (s->remote_addr) {
+            unsigned int i;
+            for (i = 0; i < w->num_of_remote_addresses; i++) {
+                if (!strcmp(s->remote_addr, w->remote_addresses[i])) {
+                    denied = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (denied == 0 && w->num_of_users) {
         if (s->remote_user) {
             unsigned int i;
             denied = 1;
@@ -4852,6 +4867,16 @@ static int JK_METHOD service(jk_endpoint_t *e,
         err = "Access denied.";
         jk_log(l, JK_LOG_WARNING,
                "Status worker '%s' service denied (no user) [%s] from %s [%s]",
+               w->name,
+               s->remote_user ? s->remote_user : "(null)",
+               s->auth_type ? s->auth_type : "(null)",
+               s->remote_addr ? s->remote_addr : "(null)",
+               s->remote_host ? s->remote_host : "(null)");
+    }
+    else if (denied == 3) {
+        err = "Access denied.";
+        jk_log(l, JK_LOG_WARNING,
+               "Status worker '%s' service denied (remote IP address is not allowed) for user '%s' [%s] from %s [%s]",
                w->name,
                s->remote_user ? s->remote_user : "(null)",
                s->auth_type ? s->auth_type : "(null)",
@@ -5326,6 +5351,17 @@ static int JK_METHOD init(jk_worker_t *pThis,
                    p->ns ? p->ns : "(null)",
                    p->xmlns ? p->xmlns : "(null)",
                    p->doctype ? p->doctype : "(null)");
+        if (jk_get_worker_remote_address_list(props, p->name,
+                                    &(p->remote_addresses),
+                                    &(p->num_of_remote_addresses))
+                && p->num_of_remote_addresses) {
+            for (i = 0; i < p->num_of_remote_addresses; i++) {
+                if (JK_IS_DEBUG_LEVEL(l))
+                    jk_log(l, JK_LOG_DEBUG,
+                            "Status worker '%s' restricting access to remote address %s",
+                            p->name, p->remote_addresses[i]);
+            }
+        }
         if (jk_get_worker_user_list(props, p->name,
                                     &(p->user_names),
                                     &(p->num_of_users)) && p->num_of_users) {

@@ -216,6 +216,10 @@ const char *jk_get_worker_style_sheet(jk_map_t *m, const char *wname, const char
 
 int jk_get_is_read_only(jk_map_t *m, const char *wname);
 
+int jk_get_worker_remote_address_list(jk_map_t *m,
+                            const char *wname,
+                            char ***list, unsigned int *num);
+
 int jk_get_worker_user_list(jk_map_t *m,
                             const char *wname,
                             char ***list, unsigned int *num);
